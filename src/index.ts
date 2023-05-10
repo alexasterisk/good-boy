@@ -3,6 +3,7 @@ config();
 
 import { Client, Event } from '@made-simple/discord.js';
 import { ChannelType, Snowflake, TextBasedChannel } from 'discord.js';
+import { CronJob } from 'cron';
 
 const client = new Client({
     intents: [
@@ -42,6 +43,63 @@ const weightedWords: Record<string, number> = {
     hiss: 20
 };
 
+const messagesForWipe = [
+    'channel has been wiped.',
+    'channel clean. doggo good.',
+    'got dusty. removed dirt.',
+    'fetched broom. swept.',
+    'cleaned. doggo happy.',
+    'doggo best janitor.',
+    'unpaid labor. doggo sad.',
+    'sweep sweep. clean.',
+    'clean up mess.',
+    'ate leftovers. in trouble.'
+];
+
+const wipeMessages = async () => {
+    const guild = await client.guilds.fetch('1028132582933667903');
+    const channels = await guild.channels.fetch();
+
+    for (const channel of channels.values()) {
+        if (!channel || !channel.isTextBased()) continue;
+        if (channel.id === '1105734585263853590') continue;
+
+        const messages = (await channel.messages.fetch())
+            .filter((message) => !message.pinned)
+            .filter((message) => {
+                const date = new Date();
+                date.setDate(date.getDate() - 14);
+                return message.createdAt > date;
+            });
+
+        if (messages.size === 0) continue;
+
+        for (let i = 0; i < Math.ceil(messages.size / 100); i++) {
+            const messageArray = messages
+                .map((message) => message)
+                .slice(i * 100, (i + 1) * 100);
+
+            for (let j = 0; j < 5; j++) {
+                try {
+                    await channel.bulkDelete(messageArray);
+                    break;
+                } catch (err) {
+                    await new Promise((resolve) => setTimeout(resolve, 5000));
+                }
+            }
+        }
+
+        await channel.send(
+            'i am good doggo. ' +
+                messagesForWipe[
+                    Math.floor(Math.random() * messagesForWipe.length)
+                ]
+        );
+    }
+};
+
+new CronJob('0 0 0 * * *', wipeMessages).start();
+
 const makeRandomMessage = () => {
     let message = '';
     const words = Object.keys(weightedWords);
@@ -72,6 +130,16 @@ client.addEvent(
         const isBot = message.author.bot;
 
         if (!isDM || isBot) return;
+
+        if (
+            message.content.toLowerCase().includes('clean') &&
+            message.author.id === '887739292372332584'
+        ) {
+            await message.channel.send('ok. cleaning.');
+            await wipeMessages();
+            await message.channel.send('done. food?');
+            return;
+        }
 
         const randomMessage = makeRandomMessage();
         await message.channel.send(randomMessage);
