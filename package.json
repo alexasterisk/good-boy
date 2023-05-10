@@ -13,7 +13,7 @@
         "build": "tsc --build --verbose",
         "deploy": "npm run build && node dist/index.js",
         "dev": "nodemon --watch src --exec \"ts-node src/index.ts\"",
-        "pm2": "npm run build && pm2 start dist/index.js --name \"the-best-boy\" --watch"
+        "pm2": "npm run build && pm2 start dist/index.js --name \"good-boy\""
     },
     "dependencies": {
         "@made-simple/discord.js": "^3.1.0",

@@ -2,7 +2,12 @@ import { config } from 'dotenv';
 config();
 
 import { Client, Event } from '@made-simple/discord.js';
-import { ChannelType, Snowflake, TextBasedChannel } from 'discord.js';
+import {
+    ActivityType,
+    ChannelType,
+    Snowflake,
+    TextBasedChannel
+} from 'discord.js';
 import { CronJob } from 'cron';
 
 const client = new Client({
@@ -123,6 +128,36 @@ const makeRandomMessage = () => {
 
     return message;
 };
+
+const statuses: Record<string, string[]> = {
+    Playing: ['with a bone', 'with a ball', 'with a stick'],
+    Listening: ['the birds', 'the wind', 'cats fight'],
+    Watching: ['cats fight', 'rain fall', 'the sun set'],
+    Competing: ['a dog contest', 'a game with cats', 'their owners affection']
+};
+
+const updateStatus = async () => {
+    const statusType = Math.floor(Math.random() * 4);
+    const status = statuses[Object.keys(statuses)[statusType]];
+    const statusText = status[Math.floor(Math.random() * status.length)];
+
+    await client.user?.setPresence({
+        activities: [
+            {
+                name: statusText + '.',
+                type: ActivityType[Object.keys(statuses)[statusType]]
+            }
+        ]
+    });
+};
+
+new CronJob('0 */15 * * * *', updateStatus).start();
+
+client.addEvent(
+    new Event('ready', true).setExecutor(async () => {
+        await updateStatus();
+    })
+);
 
 client.addEvent(
     new Event('messageCreate').setExecutor(async (_, message) => {
