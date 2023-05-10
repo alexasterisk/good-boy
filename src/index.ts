@@ -152,15 +152,14 @@ client.addEvent(
         if (guild.id !== '1028132582933667903') return;
 
         const roles = userBuckets[member.id];
-        if (!roles) return;
 
         const landingChannel = await guild.channels.fetch(
             '1105734585263853590'
         );
 
-        await member.roles.add(roles.map((role) => buckets[role]));
+        if (roles.length > 1) {
+            await member.roles.add(roles.map((role) => buckets[role]));
 
-        if (roles.length > 1)
             await (landingChannel as TextBasedChannel).send(
                 `hello <@${
                     member.id
@@ -168,42 +167,52 @@ client.addEvent(
                     .toString()
                     .replace(',', ', ')}**\ndm me for more info.`
             );
-        else
+        } else {
             await (landingChannel as TextBasedChannel).send(
-                `i dont know you <@${member.id}>. who are you`
+                `i dont know you <@${member.id}>. tell me who you are. start with "i am".`
             );
 
-        const filter = (message) => message.author.id === member.id;
-        const collector = (
-            landingChannel as TextBasedChannel
-        ).createMessageCollector({
-            filter,
-            time: 60000
-        });
+            const filter = (message) => message.author.id === member.id;
+            const collector = (
+                landingChannel as TextBasedChannel
+            ).createMessageCollector({
+                filter,
+                time: 60000
+            });
 
-        collector.once('collect', async (message) => {
-            if (message.content.toLowerCase().includes('i am')) {
-                const name = message.content
-                    .split('i am')[1]
-                    .trim()
-                    .split('')
-                    .map((char) => {
-                        return Math.random() < 0.5
-                            ? char.toUpperCase()
-                            : char.toLowerCase();
-                    })
-                    .join('');
-                await member.setNickname(
-                    name,
-                    'i am doggo bot. i do what i want.'
-                );
-                await (landingChannel as TextBasedChannel).send(
-                    `hello ${name}. i am doggo. youre not cleared for any bucket. you are a bucket. bark. dm me for more info.`
-                );
+            collector.once('collect', async (message) => {
+                if (message.content.toLowerCase().includes('i am')) {
+                    const name = message.content
+                        .split('i am')[1]
+                        .trim()
+                        .split('')
+                        .map((char) => {
+                            return Math.random() < 0.5
+                                ? char.toUpperCase()
+                                : char.toLowerCase();
+                        })
+                        .join('');
+                    await member.setNickname(
+                        name,
+                        'i am doggo bot. i do what i want.'
+                    );
+                    await (landingChannel as TextBasedChannel).send(
+                        `hello ${name}. i am doggo. youre not cleared for any bucket. you are a bucket. bark. dm me for more info.`
+                    );
+                } else {
+                    await (landingChannel as TextBasedChannel).send(
+                        'wow. you are bad at listening. i am doggo. you are now a doggo follower.'
+                    );
+
+                    await member.setNickname(
+                        'doggo follower',
+                        'i am doggo bot. i do what i want.'
+                    );
+                }
 
                 collector.stop();
-            }
-        });
+            });
+        }
     })
 );
 
