@@ -16,7 +16,7 @@
         "pm2": "npm run build && pm2 start dist/index.js --name \"the-best-boy\" --watch"
     },
     "dependencies": {
-        "@made-simple/discord.js": "^3.0.0",
+        "@made-simple/discord.js": "^3.1.0",
         "chalk": "^5.2.0",
         "discord.js": "^14.11.0",
         "dotenv": "^16.0.3"
