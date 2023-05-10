@@ -151,7 +151,7 @@ client.addEvent(
         const guild = await member.guild.fetch();
         if (guild.id !== '1028132582933667903') return;
 
-        const roles = userBuckets[member.id];
+        const roles = userBuckets[member.id] ?? [];
 
         const landingChannel = await guild.channels.fetch(
             '1105734585263853590'
