@@ -1,5 +1,6 @@
-import { Client } from '@made-simple/discord.js';
-import { Bucket, buckets, inviteURL, landingChannel } from '../config.js';
+import BucketManager, { Bucket } from '../classes/Bucket.js';
+import { TextChannel } from 'discord.js';
+import { keyv } from '../util/index.js';
 
 function makeBucketDescription(bucket: Bucket) {
     const statusCircle = bucket.open ? '🟢' : '🔴';
@@ -7,20 +8,43 @@ function makeBucketDescription(bucket: Bucket) {
     return `> **Bucket ${bucket.key}** \`${statusCircle} ${statusMessage} \`\n> ${bucket.description}`;
 }
 
-export async function sendLandingMessage(client: Client<object>) {
+async function deleteOldMessage(channel: TextChannel) {
+    const landingMessage = await keyv.get('landingMessage');
+    if (!landingMessage) return;
+
+    const message = await channel.messages.fetch(landingMessage);
+    if (!message) return;
+
+    await message.delete();
+}
+
+export async function sendLandingMessage(
+    channel: TextChannel
+): Promise<boolean> {
+    const guild = channel.guild;
+    if (!guild) throw new Error('Channel is not in a guild');
+
+    const invite = await guild.invites.create(channel, {
+        maxAge: 0,
+        maxUses: 0
+    });
+
     const hiddenInvite =
         '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| _ _ _ _ _ _' +
-        inviteURL;
-    const goodBoyPing = `*join any open bucket by pinging* <@${client.user?.id}>`;
+        invite.url;
+    const goodBoyPing = `*join any open bucket by pinging* <@${channel.client.user.id}>`;
 
-    const bucketDescriptions = buckets.map(makeBucketDescription).join('\n\n');
+    const bucketDescriptions = (await BucketManager.getBuckets(guild))
+        .map(makeBucketDescription)
+        .join('\n\n');
 
-    const landing = await client.channels.fetch(landingChannel);
-    if (!landing || !landing.isTextBased()) return;
+    await deleteOldMessage(channel);
 
-    const message = await landing.send(
+    const message = await channel.send(
         `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}`
     );
 
     await message.pin();
+    await keyv.set('landingMessage', message.id);
+    return true;
 }

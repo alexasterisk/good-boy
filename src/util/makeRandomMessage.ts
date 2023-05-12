@@ -4,14 +4,14 @@ const weightedWords: Record<string, number> = {
     ruff: 100,
     arf: 100,
     'bow wow': 100,
-    bork: 50,
-    yip: 10,
-    yap: 10,
-    yelp: 10,
-    yowl: 10,
+    bork: 80,
+    yip: 20,
+    yap: 20,
+    yelp: 20,
+    yowl: 20,
     meow: 1,
     purr: 1,
-    hiss: 20
+    hiss: 40
 };
 
 export function makeRandomMessage() {

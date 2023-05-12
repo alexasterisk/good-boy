@@ -4,21 +4,16 @@ import { Client, Event } from '@made-simple/discord.js';
 import {
     ActionRowBuilder,
     ChannelType,
+    Guild,
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder
 } from 'discord.js';
 
-import {
-    makeRandomMessage,
-    sendLandingMessage,
-    wipeMessages
-} from '../util/index.js';
-import { buckets, creatorId, guildId } from '../config.js';
+import { makeRandomMessage, keyv } from '../util/index.js';
+import BucketManager from '../classes/Bucket.js';
 
-async function buildSelectMenu(client: Client<object>) {
-    const guild = await client.guilds.fetch(guildId);
-    if (!guild) return;
-
+async function buildSelectMenu(guild: Guild) {
+    const buckets = await BucketManager.getBuckets(guild);
     const options: StringSelectMenuOptionBuilder[] = [];
 
     for (const bucket of buckets) {
@@ -53,72 +48,138 @@ export default new Event('messageCreate').setExecutor(
 
         if (isBot) return;
 
-        const msg = message.content.toLowerCase();
+        const msg = message.content.toLowerCase().trim();
 
         if (isDM) {
-            if (message.author.id === creatorId) {
-                if (msg.includes('clean')) {
-                    await message.channel.send('ok. cleaning.');
-                    await wipeMessages(client);
-                    await message.channel.send('done. food?');
+            if (await keyv.get('u' + message.author.id)) {
+                if (
+                    msg.includes('im sorry') ||
+                    msg.includes('i am sorry') ||
+                    msg.includes("i'm sorry")
+                ) {
+                    await message.channel.send('ok. i forgive.');
+                    await keyv.delete('u' + message.author.id);
                     return;
-                } else if (msg.includes('landing')) {
-                    await message.channel.send('ok. landing.');
-                    await sendLandingMessage(client);
-                    await message.channel.send('done. food?');
-                    return;
+                } else {
+                    await message.channel.send('no. you are bad. go away.');
                 }
+                return;
             }
 
             if (msg.includes('feeds') || msg.includes('food')) {
                 await message.channel.send('thank. water?');
-                return;
             } else if (msg.includes('water')) {
                 await message.channel.send('thank. treat?');
-                return;
             } else if (msg.includes('treat')) {
                 await message.channel.send('thank. walk?');
-                return;
             } else if (msg.includes('walk')) {
                 await message.channel.send('thank. sleep?');
-                return;
             } else if (msg.includes('sleep')) {
                 await message.channel.send('most thank. i have a secret.');
-                return;
             } else if (msg.includes('secret') || msg.includes('what is it')) {
                 await message.channel.send('i am undercover cat.');
-                return;
             } else if (msg.includes('cat') || msg.includes('feline')) {
                 await message.channel.send('grr. go away.');
-                return;
             } else if (msg.includes('undercover')) {
                 await message.channel.send('never. i am good doggo. believe.');
-                return;
             } else if (msg.includes('shh')) {
                 await message.channel.send('no tell what do. i tell what do.');
-                return;
             } else if (
                 msg.includes('bark') ||
                 msg.includes('woof') ||
                 msg.includes('bork')
             ) {
                 await message.channel.send('bark bark bark bark bark bark.');
-                return;
             } else if (
                 msg.includes('grr') ||
                 msg.includes('growl') ||
                 msg.includes('hiss')
             ) {
                 await message.channel.send('GRRRRRRRRRRR!!!!');
-                return;
+            } else if (
+                msg.includes('fight') ||
+                msg.includes('attack') ||
+                msg.includes('bite')
+            ) {
+                await message.channel.send('GRRRRRRRRRRR!!!!');
+            } else if (msg.includes('pat') || msg.includes('pet')) {
+                await message.channel.send('thank. i like pat.');
+            } else if (msg.includes('loser') || msg.includes('bad')) {
+                await message.channel.send(
+                    'describe self. i am good doggo. real doggo.'
+                );
+            } else if (msg.includes('lizard')) {
+                await message.channel.send(
+                    'lizard doggo is cool. i like lizard doggo. what do you know about lizard doggo?'
+                );
+            } else if (msg.includes('satisfactory')) {
+                await message.channel.send(
+                    'satisfactory is good game. are you stalker. i am good doggo. you are stalker.'
+                );
+            } else if (msg.includes('not') && msg.includes('stalker')) {
+                await message.channel.send(
+                    'can not confirm. you are stalker. go away.'
+                );
+            } else if (
+                msg.includes('i wont') ||
+                msg.includes('i will not') ||
+                msg.includes("i won't")
+            ) {
+                await message.channel.send(
+                    'you will. i am just doggo. dont lie.'
+                );
+            } else if (
+                msg.includes('mean') ||
+                msg.includes('rude') ||
+                msg.includes('suck')
+            ) {
+                await message.channel.send(
+                    'coming from you. i have no words. i am good doggo. you are bad human.'
+                );
+            } else if (
+                msg.includes('good') ||
+                msg.includes('great') ||
+                msg.includes('awesome')
+            ) {
+                await message.channel.send(
+                    'thank. i am good doggo. you are good human.'
+                );
+            } else if (
+                msg.includes('good boy') ||
+                msg.includes('good dog') ||
+                msg.includes('good doggo')
+            ) {
+                await message.channel.send('that is me. i am good doggo.');
+            } else if (
+                msg.includes('fuck you') ||
+                msg.includes('bitch') ||
+                msg.includes('asshole') ||
+                msg.includes('whore')
+            ) {
+                await message.channel.send(
+                    'you are a terrible person. you would say that to a doggo. me. a good doggo. had to hear you say that.'
+                );
+                await message.channel.send(
+                    'do you think that is ok. i am good doggo. you are bad human.'
+                );
+                await message.channel.send(
+                    'dont understand how that affect me. (good doggo).'
+                );
+                await message.channel.send(
+                    'are you okay with what you do. hurting cute doggos.'
+                );
+                await message.channel.send('dont respond. i am sad doggo.');
+                await keyv.set('u' + message.author.id, true);
+            } else {
+                const randomMessage = makeRandomMessage();
+                await message.channel.send(randomMessage);
             }
-
-            const randomMessage = makeRandomMessage();
-            await message.channel.send(randomMessage);
         } else {
             const mentions = message.mentions.users;
             if (mentions.has(client.user!.id)) {
-                const selectMenu = await buildSelectMenu(client);
+                const selectMenu = await buildSelectMenu(
+                    message.guild as Guild
+                );
                 if (!selectMenu) return;
 
                 const response = await message.channel.send({
@@ -137,8 +198,9 @@ export default new Event('messageCreate').setExecutor(
 
                     if (!collector.isStringSelectMenu()) return;
 
-                    const bucket = buckets.find(
-                        (b) => b.key === parseInt(collector.values[0])
+                    const bucket = await BucketManager.getBucket(
+                        message.guild as Guild,
+                        parseInt(collector.values[0])
                     );
                     if (!bucket) return;
 

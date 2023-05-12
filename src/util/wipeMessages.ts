@@ -1,5 +1,4 @@
-import { Client } from '@made-simple/discord.js';
-import { guildId } from '../config.js';
+import { Guild } from 'discord.js';
 
 const messagesForWipe = [
     'channel has been wiped.',
@@ -14,12 +13,18 @@ const messagesForWipe = [
     'ate leftovers. in trouble.'
 ];
 
-export async function wipeMessages(client: Client<object>) {
-    const guild = await client.guilds.fetch(guildId);
+export async function wipeMessages(guild: Guild): Promise<boolean> {
     const channels = await guild.channels.fetch();
 
     for (const channel of channels.values()) {
         if (!channel || !channel.isTextBased()) continue;
+        if (
+            channel.name.includes('suggest') ||
+            channel.name.includes('poll') ||
+            channel.name.includes('idea') ||
+            channel.name.includes('archive')
+        )
+            continue;
 
         const messages = (await channel.messages.fetch())
             .filter((message) => !message.pinned)
@@ -53,4 +58,6 @@ export async function wipeMessages(client: Client<object>) {
                 ]
         );
     }
+
+    return true;
 }
