@@ -55,4 +55,5 @@ export default new Subcommand('add')
 
         await member.roles.add(role);
         await interaction.reply(`added ${user.username} to bucket ${key}`);
+        await user.send(`you have been added to bucket ${key}`);
     });

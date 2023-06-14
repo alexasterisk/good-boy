@@ -51,12 +51,13 @@ export async function wipeMessages(guild: Guild): Promise<boolean> {
             }
         }
 
-        await channel.send(
-            'i am good doggo. ' +
-                messagesForWipe[
-                    Math.floor(Math.random() * messagesForWipe.length)
-                ]
-        );
+        if (messages.size !== 1)
+            await channel.send(
+                'i am good doggo. ' +
+                    messagesForWipe[
+                        Math.floor(Math.random() * messagesForWipe.length)
+                    ]
+            );
     }
 
     return true;

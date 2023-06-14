@@ -20,8 +20,7 @@ export default class PlacementManager {
             (placement) => placement.userId === userId
         );
 
-        if (!placement)
-            throw new Error(`Placement for user ${userId} not found`);
+        if (!placement) throw `Placement for user ${userId} not found`;
         return placement;
     }
 
@@ -32,8 +31,7 @@ export default class PlacementManager {
         const placements = await this.getPlacements(guild);
 
         const placement = await this.getPlacement(guild, userId);
-        if (placement)
-            throw new Error(`Placement for user ${userId} already exists`);
+        if (placement) throw `Placement for user ${userId} already exists`;
 
         placements.push({
             userId,
@@ -49,8 +47,7 @@ export default class PlacementManager {
         userId: string
     ): Promise<boolean> {
         const placement = await this.getPlacement(guild, userId);
-        if (!placement)
-            throw new Error(`Placement for user ${userId} not found`);
+        if (!placement) throw `Placement for user ${userId} not found`;
 
         const newPlacements = (await this.getPlacements(guild)).filter(
             (placemnt) => placemnt.userId !== userId
@@ -68,11 +65,10 @@ export default class PlacementManager {
         const placements = await this.getPlacements(guild);
         const placement = await this.getPlacement(guild, userId);
 
-        if (!placement)
-            throw new Error(`Placement for user ${userId} not found`);
+        if (!placement) throw `Placement for user ${userId} not found`;
 
         if (placement.buckets.includes(key))
-            throw new Error(`User ${userId} already has bucket ${key}`);
+            throw `User ${userId} already has bucket ${key}`;
 
         const newPlacements = placements.map((placement) => {
             if (placement.userId === userId) {
@@ -95,11 +91,10 @@ export default class PlacementManager {
         const placements = await this.getPlacements(guild);
         const placement = await this.getPlacement(guild, userId);
 
-        if (!placement)
-            throw new Error(`Placement for user ${userId} not found`);
+        if (!placement) throw `Placement for user ${userId} not found`;
 
         if (!placement.buckets.includes(key))
-            throw new Error(`User ${userId} does not have bucket ${key}`);
+            throw `User ${userId} does not have bucket ${key}`;
 
         const newBuckets = placement.buckets.filter((bucket) => bucket !== key);
         placement.buckets = newBuckets;

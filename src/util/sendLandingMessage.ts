@@ -13,7 +13,7 @@ async function deleteOldMessage(channel: TextChannel) {
     if (!landingMessage) return;
 
     const message = await channel.messages.fetch(landingMessage);
-    if (!message) return;
+    if (!message) throw null;
 
     await message.delete();
 }
@@ -22,7 +22,7 @@ export async function sendLandingMessage(
     channel: TextChannel
 ): Promise<boolean> {
     const guild = channel.guild;
-    if (!guild) throw new Error('Channel is not in a guild');
+    if (!guild) throw 'Channel is not in a guild';
 
     const invite = await guild.invites.create(channel, {
         maxAge: 0,
@@ -38,13 +38,14 @@ export async function sendLandingMessage(
         .map(makeBucketDescription)
         .join('\n\n');
 
-    await deleteOldMessage(channel);
+    deleteOldMessage(channel).finally(async () => {
+        const message = await channel.send(
+            `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}`
+        );
 
-    const message = await channel.send(
-        `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}`
-    );
+        await message.pin();
+        await keyv.set('landingMessage', message.id);
+    });
 
-    await message.pin();
-    await keyv.set('landingMessage', message.id);
     return true;
 }
