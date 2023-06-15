@@ -1,4 +1,6 @@
-import { Guild } from 'discord.js';
+import { Guild, TextChannel } from 'discord.js';
+import { keyv } from './index.js';
+import { Blacklist } from '../commands/wipe/blacklist.js';
 
 const messagesForWipe = [
     'channel has been wiped.',
@@ -13,18 +15,33 @@ const messagesForWipe = [
     'ate leftovers. in trouble.'
 ];
 
-export async function wipeMessages(guild: Guild): Promise<boolean> {
-    const channels = await guild.channels.fetch();
+export async function wipeMessages(
+    guild: Guild,
+    channel?: TextChannel,
+    forced = false
+): Promise<boolean> {
+    const channels = channel
+        ? new Map([[channel.id, channel]])
+        : await guild.channels.fetch();
+
+    const blacklist =
+        (await keyv.get<Blacklist>(`blacklist-${guild.id}`)) ?? [];
 
     for (const channel of channels.values()) {
         if (!channel || !channel.isTextBased()) continue;
-        if (
-            channel.name.includes('suggest') ||
-            channel.name.includes('poll') ||
-            channel.name.includes('idea') ||
-            channel.name.includes('archive')
-        )
-            continue;
+
+        if (!forced) {
+            if (
+                channel.name.includes('suggest') ||
+                channel.name.includes('poll') ||
+                channel.name.includes('idea') ||
+                channel.name.includes('archive') ||
+                channel.name.includes('todo')
+            )
+                continue;
+
+            if (blacklist.includes(channel.id)) continue;
+        }
 
         const messages = (await channel.messages.fetch())
             .filter((message) => !message.pinned)

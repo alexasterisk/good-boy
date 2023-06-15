@@ -1,14 +1,12 @@
-import { Command } from '@made-simple/discord.js';
-import { wipeMessages } from '../util/index.js';
+import { Subcommand } from '@made-simple/discord.js';
+import { wipeMessages } from '../../util/index.js';
 
-export default new Command('clean', {
-    allowedInDMs: false
-})
-    .setDescription('Clean messages from a channel')
-    .setDefaultMemberPermissions(8240)
+export default new Subcommand('now')
+    .setDescription('Clean messages from all channels minus the blacklist')
     .setExecutor(async (_, interaction) => {
         await interaction.deferReply();
-        const guild = interaction.guild;
+
+        const { guild } = interaction;
         if (!guild) return;
 
         await interaction.editReply('ok cleaning.');
