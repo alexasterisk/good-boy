@@ -1,6 +1,7 @@
 import Keyv from 'keyv';
 
 export const raw = new Keyv('sqlite://data/keyv.sqlite');
+raw.on('error', console.error);
 
 export const keyv = {
     get: async <T>(key: string): Promise<T | undefined> => {

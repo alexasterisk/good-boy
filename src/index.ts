@@ -1,11 +1,8 @@
-import { config } from 'dotenv';
-config();
+import 'dotenv/config';
 
-import { updateStatus, keyv, wipeMessages } from './util/index.js';
+import { updateStatus, wipeMessages } from './util/index.js';
 import { Client } from '@made-simple/discord.js';
 import { CronJob } from 'cron';
-
-keyv.on('error', console.error);
 
 const client = new Client({
     intents: [

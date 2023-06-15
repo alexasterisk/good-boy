@@ -3,17 +3,17 @@ import { Snowflake } from 'discord.js';
 import BucketManager from '../classes/Bucket.js';
 import PlacementManager from '../classes/Placement.js';
 import { keyv } from '../util/index.js';
+import { LandingData } from '../commands/landing/index.js';
 
 export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
     const guild = await member.guild.fetch();
 
-    const landingId: Snowflake | null = await keyv.get(
-        `landingChannel-${guild.id}`
-    );
-    if (!landingId) return;
+    const landingData =
+        (await keyv.get<LandingData>(`landing-${guild.id}`)) || {};
+    if (!landingData || !landingData.channel) return;
 
-    const landing = await guild.channels.fetch(landingId);
-    if (!landing || !landing.isTextBased()) return;
+    const channel = await guild.channels.fetch(landingData.channel);
+    if (!channel || !channel.isTextBased()) return;
 
     PlacementManager.getPlacement(guild, member.id)
         .then(async (placement) => {
@@ -27,7 +27,7 @@ export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
 
             await member.roles.add(roles, 'user placement');
 
-            await landing.send(
+            await channel.send(
                 `hello <@${
                     member.id
                 }> welcome. i am doggo. me bouncer.\nyou are cleared for these buckets:\n**${roles
@@ -36,12 +36,12 @@ export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
             );
         })
         .catch(async () => {
-            await landing.send(
+            await channel.send(
                 `i dont know you <@${member.id}>. tell me who you are. start with "i am".`
             );
 
             const filter = (message) => message.author.id === member.id;
-            const collector = landing.createMessageCollector({
+            const collector = channel.createMessageCollector({
                 filter,
                 time: 60000
             });
@@ -66,7 +66,7 @@ export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
                         .join('');
 
                     if (name.length === 0 || name.length > 32) {
-                        await landing.send(
+                        await channel.send(
                             'what a terrible name. doggo is cooler. you are now doggo follower.'
                         );
                         await member.setNickname(
@@ -74,7 +74,7 @@ export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
                             'because doggo follower.'
                         );
                     } else {
-                        await landing.send(
+                        await channel.send(
                             `hello ${name}. i am doggo. youre not cleared for any bucket. you are a bucket. bark. dm me for more info.`
                         );
                         await member.setNickname(
@@ -83,7 +83,7 @@ export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
                         );
                     }
                 } else {
-                    await landing.send(
+                    await channel.send(
                         'wow. you are bad at listening. i am doggo. you are now doggo follower.'
                     );
                     await member.setNickname(
