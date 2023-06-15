@@ -1,6 +1,8 @@
 import BucketManager, { Bucket } from '../classes/Bucket.js';
-import { TextChannel } from 'discord.js';
+import { Guild, TextChannel } from 'discord.js';
 import { keyv } from '../util/index.js';
+import { LandingData } from '../commands/landing/index.js';
+import { deleteLandingMessage } from '../commands/landing/delete.js';
 
 function makeBucketDescription(bucket: Bucket) {
     const statusCircle = bucket.open ? '🟢' : '🔴';
@@ -8,21 +10,11 @@ function makeBucketDescription(bucket: Bucket) {
     return `> **Bucket ${bucket.key}** \`${statusCircle} ${statusMessage} \`\n> ${bucket.description}`;
 }
 
-async function deleteOldMessage(channel: TextChannel) {
-    const landingMessage = await keyv.get('landingMessage');
-    if (!landingMessage) return;
-
-    const message = await channel.messages.fetch(landingMessage);
-    if (!message) throw null;
-
-    await message.delete();
-}
-
 export async function sendLandingMessage(
+    guild: Guild,
     channel: TextChannel
-): Promise<boolean> {
-    const guild = channel.guild;
-    if (!guild) throw 'Channel is not in a guild';
+): Promise<void> {
+    await deleteLandingMessage(guild);
 
     const invite = await guild.invites.create(channel, {
         maxAge: 0,
@@ -38,14 +30,13 @@ export async function sendLandingMessage(
         .map(makeBucketDescription)
         .join('\n\n');
 
-    deleteOldMessage(channel).finally(async () => {
-        const message = await channel.send(
-            `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}`
-        );
-
-        await message.pin();
-        await keyv.set('landingMessage', message.id);
+    const message = await channel.send({
+        content: `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}}`
     });
 
-    return true;
+    await message.pin();
+    await keyv.set<LandingData>(`landing-${guild.id}`, {
+        message: message.id,
+        channel: channel.id
+    });
 }

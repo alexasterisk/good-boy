@@ -1,5 +1,10 @@
 import { SubcommandGroup } from '@made-simple/discord.js';
 
+export interface LandingData {
+    message?: string | null;
+    channel?: string | null;
+}
+
 export default new SubcommandGroup('landing', {
     allowedInDMs: false
 })
