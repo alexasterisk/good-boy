@@ -31,7 +31,7 @@ export async function sendLandingMessage(
         .join('\n\n');
 
     const message = await channel.send({
-        content: `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}}`
+        content: `${bucketDescriptions}\n\n${goodBoyPing}\n${hiddenInvite}`
     });
 
     await message.pin();
