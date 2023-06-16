@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 import { Subcommand } from '@made-simple/discord.js';
 import BucketManager from '../../classes/Bucket.js';
 
@@ -55,5 +56,7 @@ export default new Subcommand('remove')
 
         await member.roles.remove(role);
         await interaction.reply(`removed ${user.username} from bucket ${key}`);
-        await user.send(`you have been removed from bucket ${key}`);
+        try {
+            await user.send(`you have been removed from bucket ${key}`);
+        } catch {}
     });
