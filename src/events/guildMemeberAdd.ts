@@ -27,10 +27,12 @@ export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
 
             await member.roles.add(roles, 'user placement');
 
+            const mentionableRoles = roles.map((role) => `<@&${role}>`);
+
             await channel.send(
                 `hello <@${
                     member.id
-                }> welcome. i am doggo. me bouncer.\nyou are cleared for these buckets:\n**${roles
+                }> welcome. i am doggo. me bouncer.\nyou are cleared for these buckets:\n**${mentionableRoles
                     .toString()
                     .replace(',', ', ')}**\ndm me for more info.`
             );
