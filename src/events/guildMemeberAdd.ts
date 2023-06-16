@@ -6,6 +6,7 @@ import { keyv } from '../util/index.js';
 import { LandingData } from '../commands/landing/index.js';
 
 export default new Event('guildMemberAdd').setExecutor(async (_, member) => {
+    if (!member.user.bot) return;
     const guild = await member.guild.fetch();
 
     const landingData =
