@@ -17,5 +17,5 @@ export default new Subcommand('now')
             return;
         }
 
-        await interaction.followUp('done. food?');
+        await interaction.channel?.send('done. food?');
     });
