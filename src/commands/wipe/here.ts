@@ -80,7 +80,7 @@ export default new Subcommand('here')
                         return;
                     }
 
-                    await interaction.followUp('done. food?');
+                    await interaction.channel?.send('done. food?');
                 } else if (reason === 'cancel') {
                     await interaction.editReply({
                         content: 'ok not cleaning. good call.',

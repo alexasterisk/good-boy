@@ -39,7 +39,7 @@ export default new Subcommand('whitelist')
             content: 'ok removed from blacklist. i am good doggo.'
         });
 
-        await interaction.followUp({
+        await interaction.channel?.send({
             content: 'food?'
         });
     });
